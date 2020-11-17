@@ -77,13 +77,23 @@ public class LRUcache {
     head.prev = node;
   }
 
+  private void remove(ListNode node) {
+    node.prev.next = node.next;
+    node.next.prev = node.prev;
+    map.remove(node.key);
+    node = null;
+  }
+
   // void put(int key, int value) Update the value of the key if the key exists.
   // Otherwise, add the key-value pair to the cache. If the number of keys
   // exceeds the capacity from this operation, evict the least recently used
   // key.
   public void put(int key, int value) {
     if (map.containsKey(key)) {
-      map.get(key).val = value;
+      ListNode node = new ListNode(key, value);
+      this.remove(map.get(key));
+      this.addToHead(node);
+      map.put(key, node);
     } else {
       // create new key-value pair
       if (map.keySet().size() + 1 > this.capacity) {
@@ -108,17 +118,15 @@ public class LRUcache {
 class Main {
   public static void main(String[] args) {
     LRUcache cache = new LRUcache(2);
+    cache.put(2, 1);
+    System.out.println(cache.toString());
     cache.put(1, 1);
-    cache.put(2, 2);
+    System.out.println(cache.toString());
+    cache.put(2, 3);
+    System.out.println(cache.toString());
+    cache.put(4, 1);
     System.out.println(cache.toString());
     System.out.println(cache.get(1));
-    cache.put(3, 3);
-    System.out.println(cache.toString());
     System.out.println(cache.get(2));
-    cache.put(4,4);
-    System.out.println(cache.toString());
-    System.out.println(cache.get(1));
-    System.out.println(cache.get(3));
-    System.out.println(cache.get(4));
   }
 }
