@@ -17,5 +17,8 @@ mem: mem common.h
 thread: threads common_threads.h
 	$(CC) $(FLAGS) -o threads threads.c -pthread
 
+io: io
+	$(CC) $(FLAGS) -o io io.c
+
 clean:
 	$(RM) -f cpu mem threads

@@ -20,3 +20,13 @@ PID: Process identifier, which is unique per running process.
 
  ## Concurrency
  When we run `./threads LOOPS` with different values for loops, we expect the counter to be 2 * `LOOPS`. However, life is not so simple. It turns out that an incrementation takes three instructions: one to load the value from memory into register, one to increment it, and one to store it back into memory. Because they don't execute **atomically**, strange things happen. We end up with lossy result. 
+
+## Persistence
+In system memory, data can be easily lost, as devices such as DRAM store values in a **volatile** manner; when power goes away or system crashes, any data in memory is lost. Thus, we need hardware and software to store data persistently. 
+
+The hardware comes in the form of **I/O**. A **hard drive** is a common repo for long-lived info, although **solid-state drives (SSDs)** are making head-way in this arena as well.
+
+The software in the OS that manages the disk is called the **file system**. It is responsible for storing any **files** the user creates in a reliable and efficient manner on the disks of the system. 
+
+There is no abstraction for the file system. It is assumed that the users will **share** information that is in files. These **system calls** are routed to the part of the OS called the **file system**, which handles the requests and returns some kind of error code to the user. The behind the scene for **file system** goes something like this. The file system has to do a lot of work - first figuring out where on the disk the new data wil reside, then keep track of it in various structures the file system maintins. Doing so requires isussing I/O requests to the underlying storage device, to either read existing structures or update(write) them. For performance reasons, most file systems first delay such writes for a while, hoping to batch them into larger groups. To handle the problems of the system crashes during writes, most file systems incorporate some kind of intricate write protocol, such as **journaling** or **copy-on-write**, carefully ordering writes to disk to ensure that if a failure occurs during write sequence, the system can recover to reasonable state afterwards.
+
