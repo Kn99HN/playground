@@ -78,3 +78,93 @@ a process (stop it from running for a while) and resume.
 ### Status
 There are usually interfaces to get some status information about a process,
 such as how long it has run for, or what state it's in.
+
+## Process Creation: A Little More Detail
+How programs are transformed into processes. Specifically, how does the OS get
+a program up and running? How does process creation actually work?
+
+First, the OS **load** its code and any static data(initialized variable) into 
+memory, into the address space of the process. Program initially reside on
+**disk** (or in flash-based SSDs) in some kind of **executabl format**. The OS
+needs to read those bytes from disk and place them in memory somewhere.
+
+In early OS, the loading process is done **eagerly**, i.e, all at once before
+running the program. Modern OSes perform the process **lazily**. 
+
+Once the code and static data are loaded into memory, some memory must be allocated
+for the program's **run-time stack**. C programs use the stack for local variables,
+function parameters, and return addresses. The OS allocates this memory and gives
+it to the process. The OS will also likely initialize the stack with args.
+
+The OS may also allocate some memory for the program's **heap**. In C programs,
+the heap is used for explicitly requested dynamically-allocated data.
+
+The OS will also do other initialization tasks related to I/O. For instance,
+in UNIX system, each process by default has 3 open **file descriptors**, for standard
+input, output and error. These descriptors let programs easily read input from
+the terminal and print output to the screen.
+
+The OS then start the program running at the entry point `main()`. By jumping to
+`main()` routine, the OS transfers control of the CPU to the newly-created process.
+
+## Process States
+A process can be one of three states:
+- **Running**: In the running state, a process is running on a process. This means
+it is executing instructions.
+- **Ready**: In the ready state, a process is ready to run but for some reasons
+the OS has chosen not to run it at this given moment.
+- **Blocked**: In the blocked state, a process has performed some kind of operation
+that makes it not ready to run until some other event takes place. An example
+would be when a process initiates an I/O request to a disk, it becomes blocked 
+and thus some other process can use the processor.
+
+Being moved from running to ready means the process has been **scheduled**; being
+moved from running to ready means the process has been **descheduled**. Once a 
+process has been blocked, the OS will keep it as such until some event occurs.
+At that point, the process moves to the ready state again.
+
+## Data Structures
+To track the state of each process, for example,  the OS will likely will keep
+some kind of **process list** for all processes that are ready and some additional
+info to track which process is currently running. The OS must also track blocked
+processes; when an I/O event completes, the OS should make sure to wake the correct
+process and ready it to run again.
+
+The **reigster context** will hold, for a stopped process, the contents of its
+registers. When a process is stopped, its reigsters will be saved to this memory
+location; by restoring these registers (i.e placing their values back into
+the actual physical registers), the OS can resume running the process.
+
+```
+// the registers xv6 will save and restore to stop and restart a process
+struct context {
+  int eip;
+  int esp;
+  int ebx;
+  int ecx;
+  int edx;
+  int esi;
+  int edi;
+  int ebp;
+}
+
+// the different state a process can be in
+enum proc_state(UNUSED, EMBYRO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE);
+
+// the info xv6 tracks about each process including its reigster context & state
+struct proc{
+  char *mem;      // Start of process mem
+  unit sz;        // Size of process mem
+  char *kstack;   // Bottom of kernel stack for this process
+
+  enum proc_state state;  // Process state
+  int pid;                // Process ID
+  struct proc *parent;    // Parent process
+  void *chan;             // if non-zero, sleeping on chan
+  int killed;             // if non-zero, have been killed
+  struct file *ofile[NOFILE]; // Open files
+  struct inode *cwd;  //current directory
+  struct context context; //switch here to run process
+  struct trapframe *tf; // current interrupt
+}
+```
