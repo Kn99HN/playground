@@ -21,3 +21,15 @@ The CPU **scheduler** determines which process runs at a given moment in time.
 Due to its complexity, we cannot assume which process will run first. This
 **non-determinism** leads to some interesting problems, particularly,
 **multi-threaded programs**.
+
+## The wait() system call
+Sometimes it's useful for a parent to wait for a child process to finish what is 
+has been doing. This task is done with the `wait()` sys call. 
+
+In `p2.c`, the parent process calls `wait()` to delay its execution until the child finishes
+executing. When the child is done `wait()` returns to the parent.
+
+Adding `wait()` call to the code makes it deterministic. 
+
+If the child runs first then it will print first then the parent. If the parent runs 
+first, then `wait()` is called and it won't return until the child has run and exited.
