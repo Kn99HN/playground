@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <sys/wait.h>
-#define MAX 3  
+# define MAX 3  
 int main() {
     char *command[MAX];
     write(1, "$ ", 2);
