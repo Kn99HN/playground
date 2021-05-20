@@ -1,0 +1,109 @@
+There are Stream Sockets and Datagram Sockets. 
+
+Stream Sockets are reliable two-way
+communication streams using TCP. Stream Sockets ensure data arrive sequentially
+and error-free. TCP as in "TCP/IP". IP is used to Internet routing
+
+Datagram Sockets may arrive or may note. The data within the packet will be
+error-free if it arrives. They are considered "connectionless" because 
+users don't have to maintain an open connection as with stream sockets. You 
+build a packet and send it with IP header.
+
+Data Encapsulatio: a packet is created, it is wrapped in a header by the 
+first protocol, then the whole thing is encapsulated again by the next protocol
+then again by the next then again by the final protocol on the hardware layer.
+
+When another computer receives the packet, the hardware strips the Ethernet,
+the kernel strips the IP and UDP headers, the program strips the program header,
+and it finally has the data.
+
+In network, there are a few layers that abstract away the underlying system:
+- Application: where users interact with the network
+- Presentation
+- Sesstion
+- Transport
+- Network
+- Data Link
+- Physical: hardware (serial, Ethernet...)
+
+A more general layers in UNIX would be:
+- Application Layer: telnet, ftp
+- Host-to-Host Transport Layer: TCP, UDP
+- Internet Layer: IP and routing
+- Network Access Layer: Ethernet, Wifi...
+
+The kernel builds the Transport Layer and Internet Layer on for your and the
+hardware does the Network Access Layer
+
+IP Addresses, v4 and v6
+
+IPv4: addresses made up of 4 bytes, e.g: 192.0.2.111. But we ran out of address
+at some point so we need IPv6, which is 128 bits.
+
+
+For organizational reasons, it's sometimes convenient to declare that "this
+first part of this IP address up through this bit is the network protion
+of the IP address, and the remainder is that host porition".
+
+Back in the days, there were "classes" of subnets, where the first one, two 
+or three bytes of the address was the network part. 
+
+The network porition of the IP address is described by something called `netmask`
+which you bitwise-AND with the IP address to get the network number of out it.
+
+This wasn't fine-grained enough for the needs of the Internet as we were running
+out of Class C networks. Netmask then was allowed to be an arbitrary number of 
+bits, not just 8, 16, or 24.
+
+Port number is 16-bit number that's like the local address for the connection.
+
+Analogy: IP address is street address of a hotel and the port number as room
+number.
+
+Lots of places have a firewall that hides the network from the rest of the 
+world for their own protection. The firewall translates "internal" IP addresses
+to "external" IP addresses using Network Address Translation, or NAT
+
+getaddrinfo:
+- handle filling in struct addrinfo through DNS and service name lookups.
+
+socket:
+- Get the socket descriptor to use in later sys call
+
+bind:
+- associate the socket with port the local machine
+
+connect:
+- connect to remote location
+
+listen:
+- listening for incoming packets
+
+send and recv:
+- communicating over stream sockets or connected datagram sockets
+
+sendto and recvfrom:
+- communicating over unconnected datagram sockets
+
+Serialization - packing data:
+
+Sometimes we want to send binary data across network. We can do that with:
+
+1. Convert number into text and send the text
+2. Send the data raw, passing a pointer to the data to send
+3. Encode the number into a portable binary form. The receiver will decode it
+
+Approach 1: easy to do but can be slow
+
+Approach 2: Easy and fast but NOT portable. Not all architectures represent
+double or int with the same bit representation or same byte ordering. 
+
+For floats, we can pack(or "marshal" or "serialize") the data into known binary 
+format that the receiver can unpack on the remote side.
+
+For struct, we would need to pack individual field and decode on the receiver
+end. This is due to passing that the compiler might do and we might not 
+be able to send the whole struct through the network.
+
+
+
