@@ -15,7 +15,7 @@ void *producer(void *ignored) {
   for(int i = 0; i < 5; i++) {
     pthread_mutex_lock(&mutex);
     while(count == 0) {
-        pthread_cont_wait(&nonfull, &mutex);
+        pthread_cond_wait(&nonfull, &mutex);
     }
     printf("Before produced: %d\n", count);
     buffer[in] = 1;
